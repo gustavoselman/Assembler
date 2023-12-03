@@ -1,0 +1,39 @@
+DATA:
+
+CODE: // Subrutinas anidadas
+
+MOV A,7
+MOV B,1
+
+CALL resta
+
+fin:
+    JMP fin
+
+suma:
+    XOR B,A // Bits que no generan carry a B
+    PUSH B // Guardar bits que no generan carries
+    XOR B,A // Recuperar segundo sumando
+    AND A,B // Bits que generan carry a A
+    POP B // Recuperar bits que no generan carries
+    CMP A,0 // Si carries == 0
+    JEQ suma_fin // Terminar
+    SHL A // Convertir bits a carries en A
+    CALL suma // Sumar carries
+    suma_fin:
+    MOV A,B // Resultado a A
+RET
+
+comp2:
+    NOT A // Negado de A a A
+    INC A // A++
+RET
+
+resta:
+    PUSH A // Guarda minuendo
+    MOV A,B // Sustraendo a A
+    CALL comp2 // Complemento a 2 del sustraendo a A
+    MOV B,A // Complemento a 2 del sustraendo a B
+    POP A // Recupera minuendo
+    CALL suma // Suma de minuendo y complemento a 2 del sustraendo a A
+RET

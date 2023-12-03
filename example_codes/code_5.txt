@@ -1,0 +1,26 @@
+DATA:
+
+    varA 8
+    varB 3
+
+CODE:           // Restar sin SUB ni ADD:
+
+MOV A,(varB) // varB a A
+NOT (varB),A // A Negado a varB
+INC (varB) // Incrementar varB
+
+suma:
+    MOV A,(varA) // varA a B
+    XOR B,(varB) // Suma de bits a B
+    AND A,(varB) // Carries de bits a A
+    SHL A // Shift Carries
+    MOV (varB),A // Carries a varB
+    MOV (varA),B // Suma a varB
+    CMP A,0 // Carries > 0
+    JNE suma // Volver a sumar
+
+MOV A,(varA) // Resultado a A
+
+end:
+    NOP
+    JMP end

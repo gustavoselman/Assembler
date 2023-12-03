@@ -1,0 +1,23 @@
+DATA:
+
+CODE: // Subrutinas simples
+
+MOV A,3 // 3 a A
+MOV B,2 // 7 a B
+CALL add // A + B a B
+MOV A,1 // 1 A A
+CALL add // A + B a B
+MOV A,7 // 7 a A
+CALL sub // A - B a B
+MOV A,B // B a A
+
+fin:
+JMP fin
+
+add:
+    ADD B,A // A + B a B
+RET
+
+sub:
+    SUB B,A // A - B a B
+RET

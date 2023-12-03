@@ -1,0 +1,19 @@
+DATA:
+
+CODE: // Shift left rotate
+
+MOV B,0 // Puntero en 0
+MOV A,8000h // 1000000000000000b a A
+MOV (B),A // Guardar numero
+
+shl_r:
+    MOV A,0     // 0 a A
+    OR A,(B)            // Recuperar numero
+    SHL (B),A       // Guardar shift left de numero
+                    // Si carry == 1
+    JCR shl_r_carry // Recuperar bit
+    JMP shl_r_end // No hacer nada
+    shl_r_carry:
+        INC (B) // Agregar el bit perdido
+    shl_r_end:
+        JMP shl_r // Repetir

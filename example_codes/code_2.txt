@@ -1,0 +1,8 @@
+DATA:
+CODE: // Sumar inputs
+MOV A,(1) // Guardar switches
+MOV B,(3) // Guardar botones
+ADD A,B // Sumar inputs
+MOV (2),A // Mostrar en el Display
+end:
+JMP en

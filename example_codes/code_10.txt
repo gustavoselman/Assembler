@@ -1,0 +1,11 @@
+DATA:
+
+CODE:           // Swap con stack
+
+MOV A,3         // A = 3
+MOV B,5         // B = 5
+
+PUSH A          // |
+PUSH B          // |
+POP A           // |
+POP B           // | Swap con Stack

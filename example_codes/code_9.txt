@@ -1,0 +1,13 @@
+DATA:
+
+CODE: // Hack al stack
+
+MOV A,2 // 2 a A
+PUSH A // Guarda A
+MOV A,0 // |
+NOT B,A // | Puntero al primero en el stack a B
+INC (B) // Primero en el stack++
+POP A // Recupera A incrementado
+
+end:
+    JMP end

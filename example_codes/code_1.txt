@@ -1,0 +1,30 @@
+DATA:
+led 0
+sw 0
+dis 0
+btn 0
+sec 0
+msec 0
+usec 0
+lcd 0
+odd 0 // Es impar
+last 0 // Fue impar
+CODE: // Parpadeo Inverso | Velocidad de clock a "full"
+loop:
+MOV A,(sec) // |
+AND A,1 // |
+MOV (odd),A // | Segundo es Impar ?
+MOV B,(sw) // Leer Switches
+MOV A,0 // |
+NOT A // |
+ADD A,(odd) // |
+XOR A,B // | Si fue Par, Invertir Switches
+MOV (led),A // Resultado a Leds
+MOV A,(last) // |
+CMP A,(odd) // |
+JEQ loop // | Si Hubo Cambio
+MOV B,1 // |
+XOR (last) // | Invierte Variable
+MOV A,(btn) // |
+MOV (dis),A // | Y Envia Botones al Display
+JMP loop // Repetir

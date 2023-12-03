@@ -1,0 +1,63 @@
+DATA:
+
+led 0
+sw 0
+dis 0
+btn 0
+sec 0
+msec 0
+usec 0
+lcd 0
+arr 0
+
+CODE:                               // Sumar switches | Velocidad de clock a "full"
+MOV B, arr                          // Puntero a B
+PUSH B                              // Guardar puntero
+
+input:
+    CALL std_io_btn_wait            // Esperar cambio en botones
+    MOV A,(sw)                      // Switches a A
+    MOV (B),A                       // A a arr[i]
+    INC B                           // Incrementar puntero
+    CMP A,0                         // Si Switches != 0
+    JNE input                       // Siguiente input
+
+POP B                               // Recuperar puntero
+MOV A,0                             // Resultado = 0
+
+sumar:
+    PUSH A                          // Guardar resultado
+    MOV A,(B)                       // arr[i] a A
+    CMP A,0                         // Si arr[i] == 0
+    JEQ sumar_fin                   // Terminar
+    POP A                           // Recuperar resultado
+    ADD A,(B)                       // Resultado + arr[i]
+    INC B                           // Puntero++
+    JMP sumar                       // Siguiente
+    sumar_fin:
+    POP A                           // Recuperar Resultado
+
+end:
+    MOV (dis),A                     // Mostrar en el Display
+    JMP end
+
+/////////////////Libreria std_io//////////////////////////////////////////
+                                                                        //
+std_io_btn_wait:                    // * en A, * en B                   //
+    PUSH B                          // Guarda B                         //
+    MOV A,(btn)                     // Estado actual                    //
+    std_io_btn_wait_press_lp:                                           //
+        MOV B,(btn)                 // Nuevo estado                     //
+        CMP A,B                     // Si ==                            //
+        JEQ std_io_btn_wait_press_lp    // Continuar                    //
+    XOR B,A                             // Bits cambiados               //
+        std_io_btn_wait_release_lp:                                     //
+        MOV A,(btn)                     // Nuevo estado                 //
+        AND A,B                         // Bits aún cambiados           //
+        CMP A,0                         // SI != 0                      //
+        JNE std_io_btn_wait_release_lp  // Continuar                    //
+    MOV A,B                             // Bits cambiados a A           //
+    POP B                               // Recupera B                   //
+RET                                 // Retorna Bit(s) en A              //
+                                                                        //
+//////////////////////////////////////////////////////////////////////////
