@@ -87,3 +87,7 @@ If you want to create the .spec file again run the following command
 ```bash
 pyinstaller --onefile assembler.py
 ```
+
+## License
+
+[MIT License](/license.md)
