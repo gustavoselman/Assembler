@@ -2,6 +2,11 @@
 
 The Assembler is an executable program written in Python that enables the translation of Assembly code into machine code for the Basys3 board.
 
+<!-- image -->
+<p align="center">
+  <img src="images/assembler_screen.png" width="auto" height="auto" />
+</p>
+
 ## Introduction
 
 The assembler code should be able to translate a program written in the assembly language of the project into its machine code implementation.
@@ -73,7 +78,7 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-+   icon='icon.ico',                    # Icon of the executable file
++   icon='images/icon.ico',                    # Icon of the executable file
 )
 ```
 
