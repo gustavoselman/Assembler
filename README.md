@@ -14,18 +14,71 @@ The program should receive the location of a .txt format file containing an asse
 
 Double click on the executable file (`Assembler.exe`), located in `dist` directory. It will ask for the location of the .txt file containing the assembly language program. Finally, it will program the ROM.
 
-## Others
+## Install packages
 
-### Create executable file
-
-Build the executable and create the .spec file
+Run the following command to install the packages needed to run the program
 
 ```bash
-pyinstaller --onefile assembler.py
+pip install -r requirements.txt
 ```
+
+## Create executable file
 
 If you modify the .spec file run the following command to build the executable again
 
 ```bash
 pyinstaller assembler.spec
+```
+
+Aditional configurations that I used in the .spec file
+
+```diff
+block_cipher = None
+
+
+a = Analysis(
+    ['assembler.py'],
+    pathex=[],
+    binaries=[],
+    datas=[],
+    hiddenimports=[],
+    hookspath=[],
+    hooksconfig={},
+    runtime_hooks=[],
+    excludes=[],
+    win_no_prefer_redirects=False,
+    win_private_assemblies=False,
+    cipher=block_cipher,
+    noarchive=False,
+)
+pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+
+exe = EXE(
+    pyz,
+    a.scripts,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
+    [],
++   name='Assembler',                   # Name of the executable file
+    debug=False,
+    bootloader_ignore_signals=False,
+    strip=False,
+    upx=True,
+    upx_exclude=[],
+    runtime_tmpdir=None,
++   console=False,                      # To desable the console
+    disable_windowed_traceback=False,
+    argv_emulation=False,
+    target_arch=None,
+    codesign_identity=None,
+    entitlements_file=None,
++   icon='icon.ico',                    # Icon of the executable file
+)
+```
+
+If you want to create the .spec file again run the following command
+
+```bash
+pyinstaller --onefile assembler.py
 ```
