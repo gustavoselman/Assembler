@@ -1,6 +1,13 @@
+from iic2343 import Basys3
+import sys
+from tkinter import *
+from tkinter import filedialog
+import tkinter.scrolledtext as scrolledtext
+from threading import Thread
+import pyperclip
+
 from functions.transform_to_binary import transform_to_binary
-import functions.binary_to_hex as binary_to_hex
-from opcode_dict import opcode_dict
+from functions.binary_to_hex import binary_to_hex
 from functions.format_input import get_format_lines
 from functions.get_information import (
     get_instructions,
@@ -10,19 +17,14 @@ from functions.get_information import (
     get_code_lines,
     get_labels_dict
 )
-from iic2343 import Basys3
-import sys
-from tkinter import *
-from tkinter import filedialog
-import tkinter.scrolledtext as scrolledtext
-import threading
-import pyperclip
+from opcode_dict import opcode_dict
 
 
 class Assembler:
     def __init__(self):
         self.root = Tk()
         self.root.title("Assembler")
+        self.port_number = 0
         self.basys_is_connected = False
         self.switch_basys_is_connected = BooleanVar()
         self.file_path = ""
@@ -34,50 +36,61 @@ class Assembler:
         screen_height = self.root.winfo_screenheight()
 
         # Calculate x and y coordinates for the Tk root window
-        x = (screen_width - 600) // 2
-        y = (screen_height - 450) // 2
+        x = (screen_width - 650) // 2
+        y = (screen_height - 500) // 2
 
         # Set the dimensions of the screen
-        self.root.geometry("600x450+{}+{}".format(x, y))
+        self.root.geometry("650x500+{}+{}".format(x, y))
 
         frame = Frame(self.root, padx=10, pady=10)
         frame.pack(expand=True, fill="both")
 
-        title_label = Label(
-            frame, text="Bienvenido al Ensamblador", font=("Arial", 17))
+        title_label = Label(frame, text="Bienvenido al Ensamblador", font=("Arial", 17))
         title_label.pack(pady=(0, 20))
 
         self.switch_basys_is_connected = BooleanVar()
-        self.switch_button = Checkbutton(frame, text="¿La Placa Basys está conectada?", font=(
-            "Arial", 14), variable=self.switch_basys_is_connected, command=self.update_switch_button_text)
+        self.switch_button = Checkbutton(frame, text="¿La Placa Basys está conectada?", font=("Arial", 14), variable=self.switch_basys_is_connected, command=self.update_switch_button_text)
         self.switch_button.pack(pady=20)
 
-        select_button = Button(frame, text="Seleccionar archivo", font=(
-            "Arial", 10), command=self.open_file)
-        select_button.pack()
+        self.port_container = Frame(frame)
+        self.port_container.pack(side="top", pady=(0, 20))
+        self.port_container.pack_forget()                                   # Hide the port container
 
-        self.path_label = Label(frame, text="", font=(
-            "Arial", 10), wraplength=350, justify="left")
+        port_label = Label(self.port_container, text="Seleccionar puerto", font=("Arial", 10))
+        port_label.pack(side="left", padx=(10, 5))
+
+        port_number = IntVar()
+        port_number.set(0)
+        port_menu = OptionMenu(self.port_container, port_number, *range(5), command=self.update_port_number)
+        port_menu.config(font=("Arial", 10))
+        port_menu.pack(side="left", padx=(5, 10))
+
+        select_file_button = Button(frame, text="Seleccionar archivo", font=("Arial", 10), command=self.open_file)
+        select_file_button.pack()
+
+        self.path_label = Label(frame, text="", font=("Arial", 10), wraplength=350, justify="left")
         self.path_label.pack(pady=20)
 
-        self.assembler_button = Button(frame, text="Ensamblar", font=("Arial", 14), command=lambda: threading.Thread(
-            target=self.assemble_code()).start(), state='disabled')
+        self.assembler_button = Button(frame, text="Ensamblar", font=("Arial", 14), command=lambda: Thread(target=self.assemble_code()).start(), state='disabled')
         self.assembler_button.pack(pady=20)
 
-        self.status_label = Label(frame, text="", font=(
-            "Arial", 14), wraplength=350, justify="left")
+        self.status_label = Label(frame, text="", font=("Arial", 14), wraplength=350, justify="left")
         self.status_label.pack(pady=20)
 
         self.root.mainloop()
 
     def update_switch_button_text(self):
         self.basys_is_connected = self.switch_basys_is_connected.get()
-        if self.switch_basys_is_connected.get():
-            self.switch_button.config(
-                text="¿La Placa Basys está conectada?: Sí 😎", fg="green")
+        if self.basys_is_connected:
+            self.switch_button.config(text="¿La Placa Basys está conectada?: Sí 😎", fg="green")
+            self.port_container.pack(side="top", pady=(0, 20))
         else:
-            self.switch_button.config(
-                text="¿La Placa Basys está conectada?: No 😞", fg="#0071bc")
+            self.switch_button.config(text="¿La Placa Basys está conectada?: No 😞", fg="#0071bc")
+            self.port_container.pack_forget()
+
+    def update_port_number(self, selected_port):
+        self.port_number = selected_port
+        print(f"Port number: {self.port_number}")
 
     def open_file(self):
         self.file_path = filedialog.askopenfilename(
@@ -111,8 +124,7 @@ class Assembler:
 
         try:
             if self.basys_is_connected:
-                self.rom_programmer = Basys3()
-                self.rom_programmer.begin()
+                self.initialize_rom_programmer()
 
             self.lines = get_format_lines(self.file_path)
 
@@ -166,7 +178,6 @@ class Assembler:
             instruction_1, instruction_2 = get_instructions(
                 operation=operation, mode=mode, literal=literal)
 
-            # instruction_1, instruction_2 = get_instructions(operation=operation, mode=mode, literal=literal)
             if instruction_1 is not None:
                 print(f"Instruction 1: {instruction_1}")
                 self.instructions.append(instruction_1)
@@ -174,6 +185,18 @@ class Assembler:
                 print(f"Instruction 2: {instruction_2}\n")
                 self.instructions.append(instruction_2)
             print()
+
+    def initialize_rom_programmer(self):
+        """ Create a Basys3 object and try to connect to the Basys3 board. """
+
+        self.rom_programmer = Basys3()
+
+        try:
+            print(f"Trying port {self.port_number}")
+            self.rom_programmer.begin(port_number=self.port_number)
+            return
+        except:
+            print(f"Port {self.port_number} failed")
 
     def clear_rom(self):
         n_lines = 4096
@@ -187,10 +210,9 @@ class Assembler:
         i = 0
         self.clear_rom()
         for instruction in self.instructions:
-            hexadecimal_instruction = binary_to_hex.binary_to_hex(instruction)
+            hexadecimal_instruction = binary_to_hex(instruction)
             if self.basys_is_connected:
-                self.rom_programmer.write(
-                    i, bytearray.fromhex(hexadecimal_instruction))
+                self.rom_programmer.write(i, bytearray.fromhex(hexadecimal_instruction))
             i += 1
 
         if self.basys_is_connected:
